@@ -20,6 +20,14 @@ $ npm install
 $ npm run dev
 ```
 
+### resources
+
+```
+ 在resources下存在python的运行环境
+```
+
+
+
 ### Build
 
 ```bash
