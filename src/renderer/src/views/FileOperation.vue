@@ -122,7 +122,8 @@ function deleteFile(row) {
     ElMessage({
       message: '删除成功',
       type: 'success',
-      duration: 2000
+      duration: 2000,
+      showClose: true
     })
   })
 }
