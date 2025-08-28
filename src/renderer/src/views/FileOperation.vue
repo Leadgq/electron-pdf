@@ -18,7 +18,14 @@
             >清空</el-button
           >
         </div>
-        <div class="text-sm">文件夹路径: {{ folderName }}</div>
+        <div class="text-sm flex items-center flex-wrap">
+          文件夹路径: {{ folderName }}
+          <CloseOne
+            v-if="folderName"
+            class="text-red-600 ml-[5px]"
+            @click="folderName = ''"
+          ></CloseOne>
+        </div>
       </div>
       <section class="mt-[20px] mb-[10px]">
         <div class="pl-[20px] mb-[10px]">
@@ -57,7 +64,7 @@
 </template>
 
 <script setup>
-import { Back } from '@icon-park/vue-next/es'
+import { Back, CloseOne } from '@icon-park/vue-next/es'
 import { useRouter } from 'vue-router'
 import { ref, reactive } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
