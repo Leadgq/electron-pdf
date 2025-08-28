@@ -10,12 +10,47 @@
           <el-button size="small" type="primary" :disabled="!folderName" @click="getPdfFile"
             >获取当前文件夹下pdf文件</el-button
           >
-        <el-button @click="clearFileTableList" :disabled="fileTableList.length === 0"   size="small" type="danger">清空</el-button>
+          <el-button
+            :disabled="fileTableList.length === 0"
+            size="small"
+            type="danger"
+            @click="clearFileTableList"
+            >清空</el-button
+          >
         </div>
         <div class="text-sm">文件夹路径: {{ folderName }}</div>
       </div>
-      <div class="flex-1">
-        <el-empty v-if="fileTableList.length === 0" description="暂无文件" :image-size="250" />
+      <section class="mt-[20px] mb-[10px]">
+        <div class="pl-[20px] mb-[10px]">
+          <el-button
+            type="primary"
+            size="small"
+            :disabled="fileTableList.length === 0"
+            @click="mergePdf"
+            >合并pdf</el-button
+          >
+        </div>
+      </section>
+      <div class="flex-1 overflow-auto">
+        <el-table
+          :data="fileTableList"
+          style="width: 100%"
+          row-key="path"
+          :tree-props="treeProps"
+          @selection-change="handleSelectionChange"
+        >
+          <template #empty>
+            <el-empty description="暂无文件" :image-size="100" />
+          </template>
+          <el-table-column type="selection" width="55" :selectable="() => true" />
+          <el-table-column prop="name" label="文件名" />
+          <el-table-column prop="path" label="文件路径" align="left" />
+          <el-table-column label="操作" width="200" align="center">
+            <template #default="scope">
+              <el-button size="small" type="danger" @click="deleteFile(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
     </div>
   </main>
@@ -24,8 +59,8 @@
 <script setup>
 import { Back } from '@icon-park/vue-next/es'
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
-import { ElMessageBox ,ElMessage } from 'element-plus'
+import { ref, reactive } from 'vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 const router = useRouter()
 
@@ -42,7 +77,7 @@ async function uploadFolder() {
 
 async function getPdfFile() {
   const pdfList = await window.api.getPdfFile(folderName.value)
-  if(pdfList.length === 0){
+  if (pdfList.length === 0) {
     ElMessage({
       message: '文件夹下没有pdf文件',
       type: 'warning',
@@ -54,7 +89,6 @@ async function getPdfFile() {
   fileTableList.value = pdfList
 }
 
-
 function clearFileTableList() {
   ElMessageBox.confirm('确认清空吗？', '提示', {
     confirmButtonText: '确定',
@@ -63,6 +97,33 @@ function clearFileTableList() {
   }).then(() => {
     fileTableList.value = []
     folderName.value = ''
+  })
+}
+
+const treeProps = reactive({
+  checkStrictly: false
+})
+
+const selectPath = ref([])
+function handleSelectionChange(selectRowArr) {
+  selectPath.value = selectRowArr
+}
+
+function deleteFile(row) {
+  ElMessageBox.confirm('确认删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    const itemIndex = fileTableList.value.findIndex((item) => item.path === row.path)
+    if (itemIndex !== -1) {
+      fileTableList.value.splice(itemIndex, 1)
+    }
+    ElMessage({
+      message: '删除成功',
+      type: 'success',
+      duration: 2000
+    })
   })
 }
 </script>
