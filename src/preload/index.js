@@ -8,6 +8,18 @@ const api = {
   },
   async convertDocxToPdf(docxPath) {
     return await ipcRenderer.invoke('convert-docx-to-pdf', docxPath)
+  },
+  setWindowSize(width, height) {
+    ipcRenderer.send('set-window-size', width, height)
+  },
+  setWindowSizeDefault() {
+    ipcRenderer.send('set-window-size-default')
+  },
+  async uploadFolder() {
+    return await ipcRenderer.invoke('upload-folder')
+  },
+  async getPdfFile(folderPath) {
+    return await ipcRenderer.invoke('get-pdf-file', folderPath)
   }
 }
 
