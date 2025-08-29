@@ -22,9 +22,12 @@
           文件夹路径: {{ folderName }}
           <CloseOne
             v-if="folderName"
-            class="text-red-600 ml-[5px]"
-            @click="folderName = ''"
+            class="text-red-600 ml-[5px] cursor-pointer"
+            @click="clearFolderName"
           ></CloseOne>
+        </div>
+        <div class="text-sm flex items-center flex-wrap" v-if="mergePdfPath && folderName">
+          合并后的文件路径: {{ mergePdfPath }}
         </div>
       </div>
       <section class="mt-[20px] mb-[10px]">
@@ -96,6 +99,12 @@ async function getPdfFile() {
   fileTableList.value = pdfList
 }
 
+function clearFolderName(){
+  folderName.value = ''
+  fileTableList.value = []
+  mergePdfPath.value = ''
+}
+
 function clearFileTableList() {
   ElMessageBox.confirm('确认清空吗？', '提示', {
     confirmButtonText: '确定',
@@ -135,7 +144,14 @@ function deleteFile(row) {
   })
 }
 
-function mergePdf() {
-  window.api.pdfMerge(selectPath.value.map((item) => item.path))
+const mergePdfPath = ref('')
+const mergePdf = async () => {
+  mergePdfPath.value = await window.api.pdfMerge(selectPath.value.map((item) => item.path))
+  ElMessage({
+    message: '合并成功',
+    type: 'success',
+    duration: 2000,
+    showClose: true
+  })
 }
 </script>
