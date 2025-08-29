@@ -32,7 +32,7 @@
           <el-button
             type="primary"
             size="small"
-            :disabled="fileTableList.length === 0"
+            :disabled="fileTableList.length === 0 || !folderName || selectPath.length < 2"
             @click="mergePdf"
             >合并pdf</el-button
           >
