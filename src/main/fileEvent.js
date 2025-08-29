@@ -3,17 +3,23 @@ import { spawn } from 'child_process'
 import { is } from '@electron-toolkit/utils'
 import { dialog } from 'electron'
 import { shell } from 'electron'
-import scriptPathAddress from '../../resources/pythonCode/pdf2doc.py?asset'
+import pdf2docPathAddress from '../../resources/pythonCode/pdf2doc.py?asset'
 import pythonPathAddress from '../../resources/python/python-3.13.5-embed-amd64/python.exe?asset'
+import pdfMergePathAddress from '../../resources/pythonCode/PdfFileMerger.py?asset'
 import fs from 'fs'
 import path from 'path'
 
 const scriptPath = is.dev
-  ? scriptPathAddress
-  : scriptPathAddress.replace('app.asar', 'app.asar.unpacked')
+  ? pdf2docPathAddress
+  : pdf2docPathAddress.replace('app.asar', 'app.asar.unpacked')
+
 const pythonPath = is.dev
   ? pythonPathAddress
   : pythonPathAddress.replace('app.asar', 'app.asar.unpacked')
+
+const pdfMergePath = is.dev
+  ? pdfMergePathAddress
+  : pdfMergePathAddress.replace('app.asar', 'app.asar.unpacked')
 
 ipcMain.handle('convert-pdf-to-docx', async (_, pdfPath) => {
   const docxPath = pdfPath.replace(/\.pdf$/, '.docx')
@@ -90,6 +96,53 @@ ipcMain.handle('convert-docx-to-pdf', async (_, docxPath) => {
     })
     py.on('error', (error) => {
       reject(new Error(`启动 Python 失败: ${error.message}`))
+    })
+  })
+})
+
+ipcMain.handle('pdf-merge', async (_, pdfList) => {
+  const inputPath = path.dirname(pdfList[0])
+  const outPath = path.join(inputPath, 'merge.pdf')
+  return new Promise((resolve, reject) => {
+    const py = spawn(pythonPath, [pdfMergePath, ...pdfList, outPath])
+    py.on('close', (code) => {
+      if (code === 0) {
+        resolve(outPath)
+        // 系统弹窗
+        dialog
+          .showMessageBox({
+            type: 'info',
+            title: '合并成功',
+            message: '文件已成功合并'
+          })
+          .then(() => {
+            // 打开文件所在目录
+            shell.showItemInFolder(outPath)
+            // 打开文件
+            shell.openPath(outPath)
+          })
+      } else {
+        // 系统弹窗
+        dialog
+          .showMessageBox({
+            type: 'error',
+            title: '合并失败',
+            message: `合并失败，退出码: ${code}`
+          })
+          .then(() => {
+            reject(new Error(`合并失败，退出码: ${code}`))
+          })
+      }
+    })
+    py.on('error', (error) => {
+      reject(new Error(`启动 Python 失败: ${error.message}`))
+    })
+
+    py.stdout.on('data', (data) => {
+      console.log(data.toString())
+    })
+    py.stderr.on('data', (data) => {
+      console.error(data.toString())
     })
   })
 })

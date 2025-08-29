@@ -20,6 +20,10 @@ const api = {
   },
   async getPdfFile(folderPath) {
     return await ipcRenderer.invoke('get-pdf-file', folderPath)
+  },
+  async pdfMerge(pdfList) {
+    console.log(pdfList)
+    return await ipcRenderer.invoke('pdf-merge', pdfList)
   }
 }
 

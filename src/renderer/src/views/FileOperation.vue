@@ -134,4 +134,8 @@ function deleteFile(row) {
     })
   })
 }
+
+function mergePdf() {
+  window.api.pdfMerge(selectPath.value.map((item) => item.path))
+}
 </script>
