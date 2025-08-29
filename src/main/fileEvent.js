@@ -176,32 +176,3 @@ ipcMain.handle('get-pdf-file', async (_, folderPath) => {
   })
   return pdfListInfo
 })
-
-async function checkFileExist(pythonPath, scriptPath) {
-  if (
-    !(await fs.promises
-      .access(pythonPath)
-      .then(() => true)
-      .catch(() => false))
-  ) {
-    dialog.showMessageBox({
-      type: 'error',
-      title: '转换失败',
-      message: `Python 可执行文件不存在: ${pythonPath}`
-    })
-  }
-  if (
-    !(await fs.promises
-      .access(scriptPath)
-      .then(() => true)
-      .catch(() => false))
-  ) {
-    dialog.showMessageBox({
-      type: 'error',
-      title: '转换失败',
-      message: `Python 脚本不存在: ${scriptPath}`
-    })
-  }
-}
-
-checkFileExist(pythonPath, scriptPath)
