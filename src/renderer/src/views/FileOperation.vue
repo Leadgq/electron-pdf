@@ -26,7 +26,7 @@
             @click="clearFolderName"
           ></CloseOne>
         </div>
-        <div class="text-sm flex items-center flex-wrap" v-if="mergePdfPath && folderName">
+        <div v-if="mergePdfPath && folderName" class="text-sm flex items-center flex-wrap">
           合并后的文件路径: {{ mergePdfPath }}
         </div>
       </div>
@@ -54,10 +54,35 @@
           </template>
           <el-table-column type="selection" width="55" :selectable="() => true" />
           <el-table-column prop="name" label="文件名" />
+          <el-table-column prop="startPage" label="起始页">
+            <template #default="scope">
+              <el-input
+                v-model="scope.row.startPage"
+                type="number"
+                placeholder="请输入起始页"
+                min="1"
+                :disabled="!scope.row.canDisabled"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="endPage" label="结束页">
+            <template #default="scope">
+              <el-input
+                v-model="scope.row.endPage"
+                type="number"
+                placeholder="请输入结束页"
+                :disabled="!scope.row.canDisabled"
+              />
+            </template>
+          </el-table-column>
           <el-table-column prop="path" label="文件路径" align="left" />
           <el-table-column label="操作" width="200" align="center">
             <template #default="scope">
               <el-button size="small" type="danger" @click="deleteFile(scope.row)">删除</el-button>
+              <el-button size="small" type="primary" @click="splitFile(scope.row)"
+                :disabled="!scope.row.canDisabled"
+                >分割</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -71,6 +96,7 @@ import { Back, CloseOne } from '@icon-park/vue-next/es'
 import { useRouter } from 'vue-router'
 import { ref, reactive } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { watch } from 'vue'
 
 const router = useRouter()
 
@@ -99,7 +125,7 @@ async function getPdfFile() {
   fileTableList.value = pdfList
 }
 
-function clearFolderName(){
+function clearFolderName() {
   folderName.value = ''
   fileTableList.value = []
   mergePdfPath.value = ''
@@ -125,6 +151,23 @@ function handleSelectionChange(selectRowArr) {
   selectPath.value = selectRowArr
 }
 
+watch(
+  () => selectPath.value,
+  () => {
+      selectPath.value.forEach((item) => {
+        const index = fileTableList.value.findIndex((file) => file.path === item.path)
+        if (index !== -1) {
+          fileTableList.value[index].canDisabled = true
+        } else {
+          fileTableList.value[index].canDisabled = false
+        }
+      })
+  },
+  {
+    deep:true
+  }
+)
+
 function deleteFile(row) {
   ElMessageBox.confirm('确认删除吗？', '提示', {
     confirmButtonText: '确定',
@@ -142,6 +185,10 @@ function deleteFile(row) {
       showClose: true
     })
   })
+}
+
+function splitFile(row) {
+  console.log(row)
 }
 
 const mergePdfPath = ref('')
