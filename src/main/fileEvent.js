@@ -6,6 +6,8 @@ import { shell } from 'electron'
 import pdf2docPathAddress from '../../resources/pythonCode/pdf2doc.py?asset'
 import pythonPathAddress from '../../resources/python/python-3.13.5-embed-amd64/python.exe?asset'
 import pdfMergePathAddress from '../../resources/pythonCode/PdfFileMerger.py?asset'
+import pdfSplitPathAddress from '../../resources/pythonCode/pdfSplit.py?asset'
+
 import fs from 'fs'
 import path from 'path'
 
@@ -20,6 +22,10 @@ const pythonPath = is.dev
 const pdfMergePath = is.dev
   ? pdfMergePathAddress
   : pdfMergePathAddress.replace('app.asar', 'app.asar.unpacked')
+
+const pdfSplitPath = is.dev
+  ? pdfSplitPathAddress
+  : pdfSplitPathAddress.replace('app.asar', 'app.asar.unpacked')
 
 ipcMain.handle('convert-pdf-to-docx', async (_, pdfPath) => {
   const docxPath = pdfPath.replace(/\.pdf$/, '.docx')
@@ -175,4 +181,58 @@ ipcMain.handle('get-pdf-file', async (_, folderPath) => {
     }
   })
   return pdfListInfo
+})
+
+ipcMain.handle('pdf-split', async (_, row) => {
+  const { startPage, endPage, pdfPath } = row
+  const numberStartPage = Number(startPage)
+  const numberEndPage = Number(endPage)
+  const inputPath = path.dirname(pdfPath)
+  const outPath = path.join(inputPath, 'split.pdf')
+  return new Promise((resolve, reject) => {
+    const py = spawn(pythonPath, [pdfSplitPath, pdfPath, outPath, numberStartPage, numberEndPage])
+    py.on('close', (code) => {
+      if (code === 0) {
+        resolve(outPath)
+        // 系统弹窗
+        dialog
+          .showMessageBox({
+            type: 'info',
+            title: '分割成功',
+            message: '文件已成功分割'
+          })
+          .then(() => {
+            // 打开文件所在目录
+            shell.showItemInFolder(outPath)
+            // 打开文件
+            shell.openPath(outPath)
+          })
+      } else {
+        // 系统弹窗
+        dialog
+          .showMessageBox({
+            type: 'error',
+            title: '分割失败',
+            message: `分割失败，退出码: ${code}`
+          })
+          .then(() => {
+            reject(new Error(`分割失败，退出码: ${code}`))
+          })
+      }
+    })
+    py.on('error', (error) => {
+      reject(new Error(`启动 Python 失败: ${error.message}`))
+    })
+    py.stdout.on('data', (data) => {
+      console.log(data.toString())
+    })
+    py.stderr.on('data', (data) => {
+      console.error(data.toString())
+    })
+  })
+})
+
+ipcMain.on('open-file-path', (_, path) => {
+  console.log(path)
+  shell.openPath(path)
 })

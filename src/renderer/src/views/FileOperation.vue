@@ -29,6 +29,9 @@
         <div v-if="mergePdfPath && folderName" class="text-sm flex items-center flex-wrap">
           合并后的文件路径: {{ mergePdfPath }}
         </div>
+        <div v-if="splitPath && folderName" class="text-sm flex items-center flex-wrap">
+          分割后的文件路径: {{ splitPath }}
+        </div>
       </div>
       <section class="mt-[20px] mb-[10px]">
         <div class="pl-[20px] mb-[10px]">
@@ -53,14 +56,24 @@
             <el-empty description="暂无文件" :image-size="100" />
           </template>
           <el-table-column type="selection" width="55" :selectable="() => true" />
-          <el-table-column prop="name" label="文件名" />
+          <el-table-column prop="name" label="文件名">
+            <template #default="scope">
+              <!-- 下划线 -->
+              <span
+                class="cursor-pointer text-[#409eff] underline"
+                @click="openFilePath(scope.row.path)"
+              >
+                {{ scope.row.name }}
+              </span>
+            </template>
+          </el-table-column>
           <el-table-column prop="startPage" label="起始页">
             <template #default="scope">
               <el-input
                 v-model="scope.row.startPage"
                 type="number"
                 placeholder="请输入起始页"
-                min="1"
+                min="0"
                 :disabled="!scope.row.canDisabled"
               />
             </template>
@@ -71,6 +84,7 @@
                 v-model="scope.row.endPage"
                 type="number"
                 placeholder="请输入结束页"
+                min="1"
                 :disabled="!scope.row.canDisabled"
               />
             </template>
@@ -79,8 +93,11 @@
           <el-table-column label="操作" width="200" align="center">
             <template #default="scope">
               <el-button size="small" type="danger" @click="deleteFile(scope.row)">删除</el-button>
-              <el-button size="small" type="primary" @click="splitFile(scope.row)"
+              <el-button
+                size="small"
+                type="primary"
                 :disabled="!scope.row.canDisabled"
+                @click="splitFile(scope.row)"
                 >分割</el-button
               >
             </template>
@@ -125,6 +142,10 @@ async function getPdfFile() {
   fileTableList.value = pdfList
 }
 
+function openFilePath(path) {
+  window.api.openFilePath(path)
+}
+
 function clearFolderName() {
   folderName.value = ''
   fileTableList.value = []
@@ -154,17 +175,17 @@ function handleSelectionChange(selectRowArr) {
 watch(
   () => selectPath.value,
   () => {
-      selectPath.value.forEach((item) => {
-        const index = fileTableList.value.findIndex((file) => file.path === item.path)
-        if (index !== -1) {
-          fileTableList.value[index].canDisabled = true
-        } else {
-          fileTableList.value[index].canDisabled = false
-        }
-      })
+    fileTableList.value.forEach((item) => {
+      const index = selectPath.value.findIndex((file) => file.path === item.path)
+      if (index !== -1) {
+        fileTableList.value[index].canDisabled = true
+      } else {
+        item.canDisabled = false
+      }
+    })
   },
   {
-    deep:true
+    deep: true
   }
 )
 
@@ -181,14 +202,34 @@ function deleteFile(row) {
     ElMessage({
       message: '删除成功',
       type: 'success',
-      duration: 2000,
+      duration: 1000,
       showClose: true
     })
   })
 }
 
-function splitFile(row) {
-  console.log(row)
+const splitPath = ref('')
+async function splitFile(row) {
+  const { startPage, endPage } = row
+  if (startPage > endPage) {
+    ElMessage({
+      message: '起始页不能大于结束页',
+      type: 'warning',
+      duration: 2000,
+      showClose: true
+    })
+    return
+  }
+  const cloneRow = { ...row, pdfPath: row.path }
+  splitPath.value = await window.api.pdfSplit(cloneRow)
+  if (splitPath.value) {
+    ElMessage({
+      message: '分割成功',
+      type: 'success',
+      duration: 2000,
+      showClose: true
+    })
+  }
 }
 
 const mergePdfPath = ref('')

@@ -18,12 +18,18 @@ const api = {
   async uploadFolder() {
     return await ipcRenderer.invoke('upload-folder')
   },
+  openFilePath(path) {
+    ipcRenderer.send('open-file-path', path)
+  },
   async getPdfFile(folderPath) {
     return await ipcRenderer.invoke('get-pdf-file', folderPath)
   },
   async pdfMerge(pdfList) {
     console.log(pdfList)
     return await ipcRenderer.invoke('pdf-merge', pdfList)
+  },
+  async pdfSplit(row) {
+    return await ipcRenderer.invoke('pdf-split', row)
   }
 }
 

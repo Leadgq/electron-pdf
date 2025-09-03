@@ -1,4 +1,4 @@
-from PyPDF2 import PdfFileWriter, PdfFileReader
+from PyPDF2 import PdfWriter, PdfReader
 import sys
 import os
 #  pdf的合并和剪切 合并时会自动排序
@@ -11,11 +11,11 @@ inject_site_packages()
 
 def pdf_split(pdf_in_path, pdf_out_path, start, end):
     try:
-        out = PdfFileWriter()
+        out = PdfWriter()
         with open(pdf_in_path, 'rb') as f:
-            pdf = PdfFileReader(f)
+            pdf = PdfReader(f)
             for i in range(start, end):
-                out.addPage(pdf.getPage(i))
+                out.add_page(pdf.pages[i])
             with open(pdf_out_path, 'wb') as fout:
                 out.write(fout)
         print(f"文件 {pdf_in_path} 已成功转换为 {pdf_out_path}")
@@ -31,6 +31,6 @@ if __name__ == "__main__":
     start = int(sys.argv[3]) if len(sys.argv) > 3 else 0
     # 默认值 如果没有传入 则默认到最后一页
     with open(pdf_in_path, 'rb') as f:
-        pdf = PdfFileReader(f)
+        pdf = PdfReader(f)
         end = int(sys.argv[4]) if len(sys.argv) > 4 else pdf.getNumPages()
     pdf_split(pdf_in_path, pdf_out_path, start, end)
