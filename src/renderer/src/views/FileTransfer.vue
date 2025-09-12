@@ -99,7 +99,6 @@ async function handleConvertDocx() {
 function goBack() {
   router.back()
   clearFile()
-  console.log('goBack')
 }
 </script>
 
