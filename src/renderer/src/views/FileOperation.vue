@@ -240,7 +240,7 @@ const mergePdf = async () => {
       message: '合并成功',
       type: 'success',
       duration: 2000,
-      showClose: true
+      showClose: true  
     })
   }
 }

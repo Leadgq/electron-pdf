@@ -24,6 +24,7 @@
     "element-plus": "^2.5.1",
     "pinia": "^2.1.7",
     "pinia-plugin-persist": "^1.0.0",
+    "simple-git-hooks": "^2.13.1",
     "unplugin-auto-import": "^0.17.3",
     "unplugin-vue-components": "^0.26.0",
     "vue-router": "4"
@@ -45,5 +46,14 @@
     "tailwindcss": "^3.4.1",
     "vite": "^5.0.11",
     "vue": "^3.4.5"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "yarn lint && yarn format"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
