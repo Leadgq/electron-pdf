@@ -235,11 +235,10 @@ async function splitFile(row) {
 const mergePdfPath = ref('')
 const mergePdf = async () => {
   mergePdfPath.value = await window.api.pdfMerge(selectPath.value.map((item) => item.path))
-  console.log('测试提交')
   if (mergePdfPath.value) {
     ElMessage({
       message: '合并成功',
-      type: 'success',
+      type: 'success',  
       duration: 2000,
       showClose: true
     })
