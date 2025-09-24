@@ -48,12 +48,9 @@
     "vue": "^3.4.5"
   },
   "simple-git-hooks": {
-    "pre-commit": "yarn lint && yarn format"
+    "pre-commit": "npm lint-staged"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": [
-      "eslint --fix",
-      "prettier --write"
-    ]
+      "*":"eslint --fix"
   }
 }
